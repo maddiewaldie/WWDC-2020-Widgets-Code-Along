@@ -36,15 +36,40 @@ struct SimpleEntry: TimelineEntry {
 
 struct PlaceholderView: View {
     var body: some View {
-        AvatarView(.panda)
+        EmojiRangerWidgetEntryView(entry: SimpleEntry(date: Date(), character: .panda))
+            .redacted(reason: .placeholder)
     }
 }
 
 struct EmojiRangerWidgetEntryView: View {
     var entry: Provider.Entry
-
+    
+    @Environment(\.widgetFamily) var family
+    
+    @ViewBuilder
     var body: some View {
-        AvatarView(entry.character)
+        switch family {
+        case .systemSmall:
+            ZStack {
+                AvatarView(entry.character)
+                    .foregroundColor(.white)
+            }
+            .background(Color.gameBackground)
+        default:
+            ZStack {
+                HStack {
+                    AvatarView(entry.character)
+                        .foregroundColor(.white)
+                    Text(entry.character.bio)
+                        .padding()
+                        .foregroundColor(.white)
+                }
+                .padding()
+                .widgetURL(entry.character.url)
+            }
+            .background(Color.gameBackground)
+        }
+        
     }
 }
 
@@ -58,18 +83,18 @@ struct EmojiRangerWidget: Widget {
         }
         .configurationDisplayName("Ranger Detail")
         .description("See your favorite ranger.")
-        .supportedFamilies([.systemSmall])
+        .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
 
 struct Widget_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            AvatarView(CharacterDetail.panda)
-                .previewContext(WidgetPreviewContext(family: .systemSmall))
+            EmojiRangerWidgetEntryView(entry: SimpleEntry(date: Date(), character: .panda))
+                .previewContext(WidgetPreviewContext(family: .systemMedium))
             
             PlaceholderView()
-                .previewContext(WidgetPreviewContext(family: .systemSmall))
+                .previewContext(WidgetPreviewContext(family: .systemMedium))
         }
     }
 }
